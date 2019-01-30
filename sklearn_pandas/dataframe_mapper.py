@@ -226,44 +226,38 @@ class DataFrameMapper(BaseEstimator, TransformerMixin):
                 _call_fit(self.built_default.fit, Xt, y)
         return self
 
-    def get_names(self, columns, transformer, x, alias=None):
-        """
-        Return verbose names for the transformed columns.
+    def get_names(self, columns, transformer, x, alias = None):
+		"""
+		Return verbose names for the transformed columns.
 
-        columns       name (or list of names) of the original column(s)
-        transformer   transformer - can be a TransformerPipeline
-        x             transformed columns (numpy.ndarray)
-        alias         base name to use for the selected columns
-        """
-        if alias is not None:
-            name = alias
-        elif isinstance(columns, list):
-            name = '_'.join(map(str, columns))
-        else:
-            name = columns
-        num_cols = x.shape[1] if len(x.shape) > 1 else 1
-        if num_cols > 1:
-            # If there are as many columns as classes in the transformer,
-            # infer column names from classes names.
-
-            # If we are dealing with multiple transformers for these columns
-            # attempt to extract the names from each of them, starting from the
-            # last one
-            if isinstance(transformer, TransformerPipeline):
-                inverse_steps = transformer.steps[::-1]
-                estimators = (estimator for name, estimator in inverse_steps)
-                names_steps = (_get_feature_names(e) for e in estimators)
-                names = next((n for n in names_steps if n is not None), None)
-            # Otherwise use the only estimator present
-            else:
-                names = _get_feature_names(transformer)
-            if names is not None and len(names) == num_cols:
-                return ['%s_%s' % (name, o) for o in names]
-            # otherwise, return name concatenated with '_1', '_2', etc.
-            else:
-                return [name + '_' + str(o) for o in range(num_cols)]
-        else:
-            return [name]
+		columns       name (or list of names) of the original column(s)
+		transformer   transformer - can be a TransformerPipeline
+		x             transformed columns (numpy.ndarray)
+		alias         base name to use for the selected columns
+		"""
+		if alias is not None:
+			name = alias
+		elif isinstance(columns, list):
+			name = '_'.join(map(str, columns))
+		else:
+			name = columns
+		num_cols = x.shape[1] if len(x.shape) > 1 else 1
+		if num_cols > 1:
+			if isinstance(transformer,  pipeline.TransformerPipeline):
+				inverse_steps = transformer.steps[::-1]
+				estimators = (estimator for name, estimator in inverse_steps)
+				names_steps = (_get_feature_names(e) for e in estimators)
+				names = next((n for n in names_steps if n is not None), None)
+			else:
+				names = _get_feature_names(transformer)
+			if names is not None and len(names) == num_cols:
+				if alias is not None:                            
+					return ['%s%s' % (alias, o) for o in names]  
+				return names                                     
+			else:
+				return [name + '_' + str(o) for o in range(num_cols)]
+		else:
+			return [name]
 
     def get_dtypes(self, extracted):
         dtypes_features = [self.get_dtype(ex) for ex in extracted]
